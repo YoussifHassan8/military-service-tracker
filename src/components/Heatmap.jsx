@@ -1,64 +1,101 @@
 import { useEffect, useRef } from "react";
 import CalHeatmap from "cal-heatmap";
+import Tooltip from "cal-heatmap/plugins/Tooltip";
+import dayjs from "dayjs";
 import "cal-heatmap/cal-heatmap.css";
 
 const Heatmap = ({ startDate, endDate }) => {
   const calRef = useRef(null);
 
   useEffect(() => {
-    if (!calRef.current) return;
+    if (!calRef.current || !startDate || !endDate) return;
 
     const cal = new CalHeatmap();
 
-    const generateData = () => {
+    const calculateMonthRange = () => {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const today = new Date();
+
+      return (
+        (end.getFullYear() - start.getFullYear()) * 12 +
+        (end.getMonth() - start.getMonth()) +
+        1
+      );
+    };
+
+    const generateData = () => {
+      const start = dayjs(startDate);
+      const end = dayjs(endDate);
+      const today = dayjs();
 
       const data = [];
-      let current = new Date(start);
+      let current = start;
 
-      while (current <= end) {
+      while (current.isBefore(end) || current.isSame(end, "day")) {
         data.push({
-          date: current.toISOString(),
-          value: current <= today ? 1 : 0,
+          date: current.format("YYYY-MM-DD"),
+          value:
+            current.isBefore(today, "day") || current.isSame(today, "day")
+              ? 1
+              : 0,
         });
-        current.setDate(current.getDate() + 1);
+
+        current = current.add(1, "day");
       }
 
       return data;
     };
 
-    cal.paint({
-      itemSelector: calRef.current,
+    cal.paint(
+      {
+        itemSelector: calRef.current,
 
-      date: {
-        start: new Date(startDate),
-        locale: "ar",
-      },
+        date: {
+          start: new Date(startDate),
+          locale: "ar",
+        },
 
-      range: 12,
-      domain: {
-        type: "month",
-      },
+        range: calculateMonthRange(),
 
-      subDomain: {
-        type: "day",
-      },
+        domain: {
+          type: "month",
+        },
 
-      data: {
-        source: generateData(),
-        x: "date",
-        y: "value",
-      },
+        subDomain: {
+          type: "day",
+        },
 
-      scale: {
-        color: {
-          type: "linear",
-          range: ["#27272a", "#10b981"],
+        data: {
+          source: generateData(),
+          x: "date",
+          y: "value",
+        },
+
+        scale: {
+          color: {
+            type: "linear",
+            domain: [0, 1],
+            range: ["#27272a", "#10b981"],
+          },
         },
       },
-    });
+      [
+        [
+          Tooltip,
+          {
+            text: (date) => {
+              const end = dayjs(endDate);
+              const current = dayjs(date);
+              const diff = end.diff(current, "day");
+
+              if (diff < 0) return "خلصت 🎉";
+
+              return `فاضل ${diff} يوم`;
+            },
+          },
+        ],
+      ],
+    );
 
     return () => cal.destroy();
   }, [startDate, endDate]);
@@ -67,9 +104,9 @@ const Heatmap = ({ startDate, endDate }) => {
     <div className="bg-zinc-900 p-6 rounded-2xl">
       <h2 className="text-white mb-4 text-lg font-semibold">تقويم الخدمة</h2>
 
-      {/* Wrap the heatmap container and add custom styles */}
       <div className="heatmap-wrapper">
-        <div ref={calRef} style={{ width: "100%" }} />
+        <div ref={calRef} />
+
         <style>{`
           .heatmap-wrapper .ch-domain-text {
             fill: white !important;
