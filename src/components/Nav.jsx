@@ -14,7 +14,7 @@ const Nav = ({ onReset }) => {
           </h1>
         </div>
 
-        <div className="flex gap-3 items-center justify-center">
+        <div className="flex flex-wrap gap-3 items-center justify-center">
           <button className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-xl transition duration-200 shadow-lg shadow-emerald-600/20 cursor-pointer">
             عن المشروع
           </button>
