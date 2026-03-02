@@ -129,12 +129,12 @@ const Heatmap = ({ startDate, endDate }) => {
   }, [paintCalendar]);
 
   return (
-    <div className="bg-zinc-900 p-6 rounded-2xl w-full overflow-x-auto max-w-[300px]">
+    <div className="bg-zinc-900 p-6 rounded-2xl w-full overflow-x-auto max-w-75">
       <h2 className="text-white mb-4 text-lg font-semibold">تقويم الخدمة</h2>
 
       {/* ✅ Scroll container is isolated from the outer padding/rounded styles */}
       <div className="overflow-x-auto">
-        <div className="heatmap-wrapper min-w-[300px]">
+        <div className="heatmap-wrapper min-w-75">
           <div ref={containerRef} />
 
           <style>{`
